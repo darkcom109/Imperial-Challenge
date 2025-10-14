@@ -4,6 +4,8 @@
   A website application built with <strong>Next.js</strong>, <strong>React</strong>, and <strong>Tailwind CSS</strong> — deployed seamlessly on <strong>Vercel</strong>.
 </p>
 
+<a href="https://advanced-expense-tracker-imperial-2.vercel.app/">Test the Application</a>
+
 <p align="center">
   <img src="https://img.shields.io/badge/-HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white" />
   <img src="https://img.shields.io/badge/-CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white" />
@@ -29,5 +31,6 @@ npm install
 # Run the server
 npm run dev
 ```
+
 
 
