@@ -1,7 +1,7 @@
 <h1 align="center">🚀 Imperial App</h1>
 
 <p align="center">
-  A modern full-stack web application built with <strong>Next.js</strong>, <strong>React</strong>, and <strong>Tailwind CSS</strong> — deployed seamlessly on <strong>Vercel</strong>.
+  A website application built with <strong>Next.js</strong>, <strong>React</strong>, and <strong>Tailwind CSS</strong> — deployed seamlessly on <strong>Vercel</strong>.
 </p>
 
 <p align="center">
@@ -29,4 +29,5 @@ npm install
 # Run the server
 npm run dev
 ```
+
 
