@@ -247,7 +247,7 @@ export default function Home() {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    label={({ name, percent }: { name: string; percent: number }) => `${name} ${(percent * 100).toFixed(0)}%`}
                     outerRadius={80}
                     fill="#8884d8"
                     dataKey="value"
@@ -343,14 +343,11 @@ export default function Home() {
                       onChange={(e) => setCategory(e.target.value)}
                       className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                     >
-                      {categories.map((cat) => {
-                        const IconComponent = cat.icon;
-                        return (
-                          <option key={cat.name} value={cat.name}>
-                            {cat.name}
-                          </option>
-                        );
-                      })}
+                      {categories.map((cat) => (
+                        <option key={cat.name} value={cat.name}>
+                          {cat.name}
+                        </option>
+                      ))}
                     </select>
                   </div>
 
