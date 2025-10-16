@@ -2,6 +2,7 @@
 
 <p align="center">
   A website application built with <strong>Next.js</strong>, <strong>React</strong>, and <strong>Tailwind CSS</strong> — deployed seamlessly on <strong>Vercel</strong>.
+  Friendly note: this was my first website ever deployed
 </p>
 
 <p align="center">
@@ -33,6 +34,7 @@ npm install
 # Run the server
 npm run dev
 ```
+
 
 
 
