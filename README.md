@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-  <a href="https://advanced-expense-tracker-imperial-2.vercel.app/">🚀 Test the Application</a>
+  <a href="https://advanced-expense-tracker-imperial-2.vercel.app/">Test the Application Here</a>
 </p>
 
 <p align="center">
@@ -34,6 +34,7 @@ npm install
 # Run the server
 npm run dev
 ```
+
 
 
 
