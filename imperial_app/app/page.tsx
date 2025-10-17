@@ -249,27 +249,48 @@ export default function Home() {
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* Pie Chart */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-white/20">
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
             <h2 className="text-xl font-semibold text-slate-800 mb-6">Spending Distribution</h2>
             {pieChartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={pieChartData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {pieChartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => [`$${value}`, 'Amount']} />
-                </PieChart>
-              </ResponsiveContainer>
+              <div className="flex flex-col lg:flex-row items-center gap-6">
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie
+                      data={pieChartData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {pieChartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value) => [`$${value}`, 'Amount']} />
+                  </PieChart>
+                </ResponsiveContainer>
+                
+                {/* Color Legend */}
+                <div className="space-y-2 min-w-[200px]">
+                  {pieChartData.map((entry, index) => {
+                    const percentage = ((entry.value / totalExpenses) * 100).toFixed(1);
+                    return (
+                      <div key={index} className="flex items-center justify-between text-sm">
+                        <div className="flex items-center space-x-2">
+                          <div 
+                            className="w-4 h-4 rounded-full" 
+                            style={{ backgroundColor: entry.color }}
+                          ></div>
+                          <span className="font-medium text-slate-700">{entry.name}</span>
+                        </div>
+                        <span className="text-slate-600">{percentage}%</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             ) : (
               <div className="flex items-center justify-center h-[300px] text-slate-500">
                 <p>No data to display</p>
