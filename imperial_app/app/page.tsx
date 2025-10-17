@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useDeferredValue, useCallback } from 'react';
 import { 
   DollarSign, 
   TrendingUp, 
@@ -49,6 +49,9 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [showAddForm, setShowAddForm] = useState(false);
   const [formRef, setFormRef] = useState<HTMLDivElement | null>(null);
+  
+  // Defer search to reduce re-renders
+  const deferredSearchTerm = useDeferredValue(searchTerm);
 
   // Load expenses from localStorage on component mount
   useEffect(() => {
@@ -63,7 +66,7 @@ export default function Home() {
     localStorage.setItem('expenses', JSON.stringify(expenses));
   }, [expenses]);
 
-  const addExpense = (e: React.FormEvent) => {
+  const addExpense = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     if (!description || !amount) return;
 
@@ -75,11 +78,11 @@ export default function Home() {
       date: new Date().toISOString().split('T')[0]
     };
 
-    setExpenses([...expenses, newExpense]);
+    setExpenses(prev => [...prev, newExpense]);
     setDescription('');
     setAmount('');
     setShowAddForm(false);
-  };
+  }, [description, amount, category]);
 
   const handleAddExpenseClick = () => {
     setShowAddForm(true);
@@ -94,65 +97,79 @@ export default function Home() {
     }, 100);
   };
 
-  const deleteExpense = (id: string) => {
-    setExpenses(expenses.filter(expense => expense.id !== id));
-  };
+  const deleteExpense = useCallback((id: string) => {
+    setExpenses(prev => prev.filter(expense => expense.id !== id));
+  }, []);
 
-  const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+  // Memoize expensive calculations
+  const totalExpenses = useMemo(() => 
+    expenses.reduce((sum, expense) => sum + expense.amount, 0), [expenses]
+  );
   
-  // Filter expenses based on search and category
-  const filteredExpenses = expenses.filter(expense => {
-    const matchesSearch = expense.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'All' || expense.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  // Filter expenses based on search and category (with deferred search)
+  const filteredExpenses = useMemo(() => {
+    const q = deferredSearchTerm.toLowerCase();
+    return expenses.filter(expense => {
+      const matchesSearch = expense.description.toLowerCase().includes(q);
+      const matchesCategory = selectedCategory === 'All' || expense.category === selectedCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [expenses, deferredSearchTerm, selectedCategory]);
 
   // Calculate expenses by category for chart
-  const expensesByCategory = categories.map(cat => ({
-    name: cat.name,
-    amount: expenses
-      .filter(expense => expense.category === cat.name)
-      .reduce((sum, expense) => sum + expense.amount, 0),
-    color: cat.color,
-    icon: cat.icon,
-    chartColor: cat.chartColor
-  })).filter(cat => cat.amount > 0);
+  const expensesByCategory = useMemo(() => 
+    categories.map(cat => ({
+      name: cat.name,
+      amount: expenses
+        .filter(expense => expense.category === cat.name)
+        .reduce((sum, expense) => sum + expense.amount, 0),
+      color: cat.color,
+      icon: cat.icon,
+      chartColor: cat.chartColor
+    })).filter(cat => cat.amount > 0), [expenses]
+  );
 
   // Prepare data for charts
-  const pieChartData = expensesByCategory.map(cat => ({
-    name: cat.name,
-    value: cat.amount,
-    color: cat.chartColor
-  }));
+  const pieChartData = useMemo(() => 
+    expensesByCategory.map(cat => ({
+      name: cat.name,
+      value: cat.amount,
+      color: cat.chartColor
+    })), [expensesByCategory]
+  );
 
   // Weekly spending data for line chart
-  const weeklyData = Array.from({ length: 7 }, (_, i) => {
-    const date = new Date();
-    date.setDate(date.getDate() - (6 - i));
-    const dateStr = date.toISOString().split('T')[0];
-    const dayExpenses = expenses.filter(expense => expense.date === dateStr);
-    return {
-      day: date.toLocaleDateString('en-US', { weekday: 'short' }),
-      amount: dayExpenses.reduce((sum, expense) => sum + expense.amount, 0)
-    };
-  });
+  const weeklyData = useMemo(() => 
+    Array.from({ length: 7 }, (_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (6 - i));
+      const dateStr = date.toISOString().split('T')[0];
+      const dayExpenses = expenses.filter(expense => expense.date === dateStr);
+      return {
+        day: date.toLocaleDateString('en-US', { weekday: 'short' }),
+        amount: dayExpenses.reduce((sum, expense) => sum + expense.amount, 0)
+      };
+    }), [expenses]
+  );
 
 
   // Get recent expenses (last 7 days)
-  const recentExpenses = expenses
-    .filter(expense => {
-      const expenseDate = new Date(expense.date);
-      const weekAgo = new Date();
-      weekAgo.setDate(weekAgo.getDate() - 7);
-      return expenseDate >= weekAgo;
-    })
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 5);
+  const recentExpenses = useMemo(() => 
+    expenses
+      .filter(expense => {
+        const expenseDate = new Date(expense.date);
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        return expenseDate >= weekAgo;
+      })
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, 5), [expenses]
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       {/* Header */}
-      <div className="bg-white/80 backdrop-blur-sm shadow-lg border-b border-white/20">
+      <div className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div>
@@ -176,7 +193,7 @@ export default function Home() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-white/20 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow duration-200">
             <div className="flex items-center">
               <div className="p-4 bg-gradient-to-r from-red-400 to-pink-500 rounded-2xl shadow-lg">
                 <DollarSign className="w-6 h-6 text-white" />
@@ -188,7 +205,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-white/20 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow duration-200">
             <div className="flex items-center">
               <div className="p-4 bg-gradient-to-r from-blue-400 to-cyan-500 rounded-2xl shadow-lg">
                 <TrendingUp className="w-6 h-6 text-white" />
@@ -200,7 +217,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-white/20 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow duration-200">
             <div className="flex items-center">
               <div className="p-4 bg-gradient-to-r from-green-400 to-emerald-500 rounded-2xl shadow-lg">
                 <Calendar className="w-6 h-6 text-white" />
@@ -214,7 +231,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-white/20 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow duration-200">
             <div className="flex items-center">
               <div className="p-4 bg-gradient-to-r from-purple-400 to-violet-500 rounded-2xl shadow-lg">
                 <Target className="w-6 h-6 text-white" />
@@ -286,7 +303,7 @@ export default function Home() {
           {/* Add Expense Form */}
           {showAddForm && (
             <div className="lg:col-span-3" ref={setFormRef}>
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-white/20">
+              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                 <h2 className="text-xl font-semibold text-slate-800 mb-6">Add New Expense</h2>
                 <form onSubmit={addExpense} className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div>
@@ -345,7 +362,7 @@ export default function Home() {
 
           {/* Category Breakdown Chart */}
           <div className="lg:col-span-1">
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-white/20">
+            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
               <h2 className="text-xl font-semibold text-slate-800 mb-6">Spending by Category</h2>
               {expensesByCategory.length === 0 ? (
                 <p className="text-gray-500 text-center py-8">No expenses yet</p>
@@ -376,7 +393,7 @@ export default function Home() {
 
           {/* Recent Expenses */}
           <div className="lg:col-span-2">
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-white/20">
+            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-semibold text-slate-800">Recent Expenses</h2>
                 <div className="flex space-x-4">
@@ -415,7 +432,7 @@ export default function Home() {
                   {filteredExpenses.slice().reverse().map((expense) => {
                     const categoryInfo = categories.find(cat => cat.name === expense.category);
                     return (
-                      <div key={expense.id} className="flex items-center justify-between p-4 bg-gradient-to-r from-slate-50 to-blue-50 rounded-2xl hover:from-slate-100 hover:to-blue-100 transition-all duration-300 border border-white/50 shadow-sm hover:shadow-md">
+                      <div key={expense.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 border border-gray-200">
                         <div className="flex items-center space-x-4">
                           <div className={`w-12 h-12 rounded-2xl ${categoryInfo?.color || 'bg-gradient-to-r from-gray-400 to-slate-500'} flex items-center justify-center text-white font-bold shadow-lg`}>
                             {categoryInfo?.icon && <categoryInfo.icon className="w-6 h-6" />}
