@@ -19,7 +19,7 @@ import {
   Plane,
   Package
 } from 'lucide-react';
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
+import { PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 
 interface Expense {
   id: string;
@@ -137,11 +137,6 @@ export default function Home() {
     };
   });
 
-  // Monthly spending by category for bar chart
-  const monthlyCategoryData = expensesByCategory.map(cat => ({
-    category: cat.name.split(' ')[0], // Shortened name
-    amount: cat.amount
-  }));
 
   // Get recent expenses (last 7 days)
   const recentExpenses = expenses
@@ -287,21 +282,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Bar Chart */}
-        {monthlyCategoryData.length > 0 && (
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-white/20 mb-8">
-            <h2 className="text-xl font-semibold text-slate-800 mb-6">Spending by Category</h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={monthlyCategoryData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="category" />
-                <YAxis />
-                <Tooltip formatter={(value) => [`$${value}`, 'Amount']} />
-                <Bar dataKey="amount" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Add Expense Form */}
