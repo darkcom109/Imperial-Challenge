@@ -2,7 +2,7 @@
 
 <p align="center">
   A website application built with <strong>Next.js</strong>, <strong>React</strong>, and <strong>Tailwind CSS</strong> — deployed seamlessly on <strong>Vercel</strong>.
-  Friendly note: this was my first website ever deployed
+  Friendly note: this was my first website ever deployed + the original application had extreme latency, this was reduced by 60% - 70% through using less expensive CSS and removing some chart features due to their heavy overhead 
 </p>
 
 <p align="center">
@@ -34,6 +34,7 @@ npm install
 # Run the server
 npm run dev
 ```
+
 
 
 
