@@ -1,4 +1,4 @@
-<h1 align="center">🚀 Imperial App</h1>
+<h1 align="center">Imperial Learning Using Next.js - Expense Tracker Application</h1>
 
 <p align="center">
   A website application built with <strong>Next.js</strong>, <strong>React</strong>, and <strong>Tailwind CSS</strong> — deployed seamlessly on <strong>Vercel</strong>.
@@ -34,6 +34,7 @@ npm install
 # Run the server
 npm run dev
 ```
+
 
 
 
